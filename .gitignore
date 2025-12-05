@@ -1,0 +1,38 @@
+﻿# Backend
+backend/target/
+backend/.idea/
+backend/.settings/
+backend/.classpath
+backend/.project
+backend/*.iml
+backend/pom.xml.tag
+backend/pom.xml.releaseBackup
+backend/pom.xml.versionsBackup
+backend/pom.xml.next
+backend/release.properties
+backend/dependency-reduced-pom.xml
+
+# Frontend
+frontend/node_modules/
+frontend/.parcel-cache/
+frontend/dist/
+frontend/.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# System
+Thumbs.db
+.classpath
+.project
+.settings/
+
+# Environment
+.env
+.env.local
+*.log
