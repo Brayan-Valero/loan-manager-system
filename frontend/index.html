@@ -8,9 +8,22 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .loading { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
-    <div id="app"></div>
+    <div id="app">
+        <div class="loading">
+            <div>
+                <div class="spinner"></div>
+                <p style="text-align: center; margin-top: 20px;">Cargando Loan Manager...</p>
+            </div>
+        </div>
+    </div>
 
     <script src="assets/js/supabase-config.js"></script>
     <script src="assets/js/api.js"></script>

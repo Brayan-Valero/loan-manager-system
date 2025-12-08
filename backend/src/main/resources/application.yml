@@ -3,7 +3,7 @@ spring:
     name: loan-manager-backend
   
   datasource:
-    url: jdbc:postgresql://db.kjevzsclagnginnyfgao.subabase.co:5432/postgres
+    url: jdbc:postgresql://db.kjevzsclagnginnyfgao.supabase.co:5432/postgres
     username: postgres
     password: Brayan10_
     driver-class-name: org.postgresql.Driver

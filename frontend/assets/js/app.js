@@ -7,26 +7,65 @@ let clients = [];
 let loans = [];
 let payments = [];
 
+// Esperar a que Supabase esté disponible
+async function waitForSupabase() {
+    let attempts = 0;
+    while (!window.supabase && attempts < 30) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    return window.supabase ? true : false;
+}
+
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', async () => {
-    Auth.onAuthStateChange(async (user, event) => {
-        currentUser = user;
+    try {
+        console.log('Iniciando aplicación...');
+        
+        // Esperar a que Supabase esté disponible
+        const supabaseAvailable = await waitForSupabase();
+        if (!supabaseAvailable) {
+            console.error('Supabase no se cargó');
+            document.getElementById('app').innerHTML = '<div style="padding: 20px; color: red; font-size: 18px;">Error: La librería de Supabase no se cargó. Por favor, recarga la página.</div>';
+            return;
+        }
+
+        // Inicializar Supabase
+        const supabaseReady = initSupabase();
+        if (!supabaseReady) {
+            console.error('No se pudo inicializar Supabase');
+            document.getElementById('app').innerHTML = '<div style="padding: 20px; color: red; font-size: 18px;">Error: No se pudo inicializar Supabase.</div>';
+            return;
+        }
+
+        console.log('Supabase inicializado correctamente');
+
+        // Escuchar cambios de autenticación
+        Auth.onAuthStateChange(async (user, event) => {
+            console.log('Auth state changed:', event, user?.email);
+            currentUser = user;
+            if (user) {
+                await loadData();
+                showPage('dashboard');
+            } else {
+                showLoginPage();
+            }
+        });
+
+        // Verificar si hay sesión activa
+        const user = await Auth.getCurrentUser();
+        console.log('Usuario actual:', user?.email || 'No autenticado');
+        
         if (user) {
+            currentUser = user;
             await loadData();
             showPage('dashboard');
         } else {
             showLoginPage();
         }
-    });
-
-    // Verificar si hay sesión activa
-    const user = await Auth.getCurrentUser();
-    if (user) {
-        currentUser = user;
-        await loadData();
-        showPage('dashboard');
-    } else {
-        showLoginPage();
+    } catch (error) {
+        console.error('Error inicializando la app:', error);
+        document.getElementById('app').innerHTML = '<div style="padding: 20px; color: red;">Error: ' + error.message + '</div>';
     }
 });
 
@@ -73,8 +112,18 @@ async function handleLogin() {
     }
 
     try {
-        await Auth.login(email, password);
-        Notification.success('¡Ingreso exitoso!');
+        const session = await Auth.login(email, password);
+        if (session) {
+            currentUser = session.user;
+            Notification.success('¡Ingreso exitoso!');
+            // Pequeño delay para asegurar que todo se cargue
+            setTimeout(async () => {
+                await loadData();
+                showPage('dashboard');
+            }, 500);
+        } else {
+            Notification.error('No se pudo establecer la sesión');
+        }
     } catch (error) {
         Notification.error('Error: ' + error.message);
     }
@@ -652,15 +701,8 @@ async function savePayment(loanId) {
             notes: notes
         });
 
-        // Actualizar saldo del préstamo
-        const loan = loans.find(l => l.id === loanId);
-        if (loan) {
-            loan.balance = Math.max(0, loan.balance - amount);
-            loan.paidInstallments = (loan.paidInstallments || 0) + 1;
-            if (loan.balance <= 0) loan.status = 'COMPLETED';
-            await API.updateLoan(loanId, loan);
-        }
-
+        // El backend aplicará el pago (interés + principal) y actualizará el préstamo.
+        // Solo recargamos datos para reflejar el cambio.
         await loadData();
         document.querySelector('.modal').remove();
         showPage('payments');
@@ -881,5 +923,21 @@ async function logout() {
     } catch (error) {
         Notification.error('Error: ' + error.message);
     }
+}
+
+// Funciones de render faltantes
+function renderDashboard() {
+    // El dashboard se renderiza automáticamente en getDashboardHTML()
+    console.log('Dashboard renderizado');
+}
+
+function renderPayments() {
+    // Los pagos se renderizan automáticamente en getPaymentsHTML()
+    console.log('Payments renderizados');
+}
+
+function renderSimulator() {
+    // El simulador se renderiza automáticamente en getSimulatorHTML()
+    console.log('Simulator renderizado');
 }
 

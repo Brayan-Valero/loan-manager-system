@@ -60,4 +60,36 @@ public class LoanService {
         
         return principal.multiply(numerator).divide(denominator, 2, RoundingMode.HALF_UP);
     }
+
+    public java.util.List<java.util.Map<String, Object>> calculateAmortizationSchedule(BigDecimal principal, BigDecimal annualRate, Integer months, java.time.LocalDate startDate) {
+        java.util.List<java.util.Map<String, Object>> schedule = new java.util.ArrayList<>();
+        BigDecimal monthlyRate = annualRate.divide(BigDecimal.valueOf(12 * 100), 10, RoundingMode.HALF_UP);
+        BigDecimal monthlyInstallment = calculateMonthlyInstallment(principal, annualRate, months);
+
+        BigDecimal balance = principal.setScale(2, RoundingMode.HALF_UP);
+
+        for (int i = 1; i <= months; i++) {
+            BigDecimal interest = balance.multiply(monthlyRate).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal principalPaid = monthlyInstallment.subtract(interest).setScale(2, RoundingMode.HALF_UP);
+            if (principalPaid.compareTo(balance) > 0) {
+                principalPaid = balance;
+            }
+            BigDecimal payment = interest.add(principalPaid).setScale(2, RoundingMode.HALF_UP);
+            balance = balance.subtract(principalPaid).setScale(2, RoundingMode.HALF_UP);
+            java.time.LocalDate paymentDate = null;
+            if (startDate != null) paymentDate = startDate.plusMonths(i);
+
+            java.util.Map<String, Object> entry = new java.util.LinkedHashMap<>();
+            entry.put("installment", i);
+            entry.put("paymentDate", paymentDate == null ? null : paymentDate.toString());
+            entry.put("payment", payment);
+            entry.put("interest", interest);
+            entry.put("principal", principalPaid);
+            entry.put("balance", balance);
+
+            schedule.add(entry);
+        }
+
+        return schedule;
+    }
 }
